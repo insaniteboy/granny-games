@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Granny Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0d0b09;
+    --panel: #1b1512;
+    --glow: #d9c25c;
+    --rust: #8a2e22;
+    --paper: #eae3d3;
+    --paper-dim: #cfc6b0;
+    --muted: #8f8576;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    background: var(--bg);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body{
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8vh 6vw 10vh;
+  }
+
+  /* ---------- ambient background ---------- */
+  .bg-wash{
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% -10%, #241a13 0%, transparent 55%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 34px),
+      var(--bg);
+    z-index: 0;
+  }
+
+  .grain{
+    position: fixed;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    opacity: 0.05;
+    z-index: 1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* flashlight / fog overlay, the signature interaction */
+  .fog{
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: radial-gradient(circle 260px at var(--x,50%) var(--y,32%),
+      transparent 0%,
+      rgba(13,11,9,0.35) 45%,
+      rgba(13,11,9,0.86) 75%,
+      rgba(13,11,9,0.97) 100%);
+    transition: background 60ms linear;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-bottom: 7vh;
+  }
+
+  .eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.42em;
+    color: var(--muted);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: rise 0.8s ease 0.15s forwards;
+  }
+
+  h1{
+    font-family: 'Special Elite', cursive;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    letter-spacing: 0.05em;
+    margin: 0.35em 0 0.3em;
+    color: var(--paper);
+    text-shadow: 0 0 18px rgba(217,194,94,0.15);
+    animation: flicker-in 1.6s ease 0.2s forwards;
+    opacity: 0;
+  }
+
+  .sub{
+    font-size: 0.95rem;
+    color: var(--paper-dim);
+    max-width: 34ch;
+    margin: 0 auto;
+    line-height: 1.6;
+    opacity: 0;
+    animation: rise 0.9s ease 0.55s forwards;
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(10px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  @keyframes flicker-in{
+    0%{ opacity: 0; }
+    6%{ opacity: 0.7; }
+    9%{ opacity: 0.1; }
+    14%{ opacity: 0.85; }
+    18%{ opacity: 0.2; }
+    26%{ opacity: 1; }
+    32%{ opacity: 0.4; }
+    40%{ opacity: 1; }
+    100%{ opacity: 1; }
+  }
+
+  /* ---------- board ---------- */
+  .board{
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(200px, 260px));
+    gap: 4.5vw 3.5vw;
+    justify-content: center;
+  }
+
+  @media (max-width: 780px){
+    .board{ grid-template-columns: minmax(220px, 300px); }
+  }
+
+  .card{
+    --rot: 0deg;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transform: translateY(-46px) rotate(var(--rot)) scale(0.96);
+    opacity: 0;
+    animation: pin-drop 0.75s cubic-bezier(.2,.9,.3,1.25) forwards;
+    animation-delay: var(--delay, 0s);
+    transition: transform 0.35s cubic-bezier(.2,.8,.3,1), filter 0.35s ease;
+    cursor: pointer;
+  }
+
+  @keyframes pin-drop{
+    0%{ transform: translateY(-46px) rotate(var(--rot)) scale(0.96); opacity: 0; }
+    60%{ opacity: 1; }
+    100%{ transform: translateY(0) rotate(var(--rot)) scale(1); opacity: 1; }
+  }
+
+  .card:hover, .card:focus-visible{
+    transform: translateY(-8px) rotate(0deg) scale(1.035);
+    filter: drop-shadow(0 22px 30px rgba(0,0,0,0.55));
+  }
+
+  .card:focus-visible{
+    outline: 2px solid var(--glow);
+    outline-offset: 6px;
+    border-radius: 4px;
+  }
+
+  .frame{
+    background: var(--paper);
+    padding: 12px 12px 40px;
+    border-radius: 2px;
+    box-shadow:
+      0 14px 26px rgba(0,0,0,0.55),
+      0 2px 0 rgba(0,0,0,0.2) inset;
+    position: relative;
+  }
+
+  .photo{
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #000;
+    filter: saturate(0.85) contrast(1.05) brightness(0.92);
+    transition: filter 0.35s ease;
+  }
+
+  .card:hover .photo, .card:focus-visible .photo{
+    filter: saturate(1) contrast(1.1) brightness(1);
+  }
+
+  .photo img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transform: scale(1.06);
+    transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+  }
+
+  .card:hover .photo img, .card:focus-visible .photo img{
+    transform: scale(1.16);
+  }
+
+  .pin{
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #c9564a, var(--rust) 60%, #4a1410 100%);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+    z-index: 3;
+  }
+
+  .label{
+    font-family: 'Special Elite', cursive;
+    font-size: 1.02rem;
+    letter-spacing: 0.03em;
+    color: #2a2420;
+    text-align: center;
+    margin: 14px 0 0;
+    line-height: 1.3;
+  }
+
+  .tag{
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    color: #7a7263;
+    text-align: center;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .play-hint{
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: var(--glow);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .card:hover .play-hint, .card:focus-visible .play-hint{
+    opacity: 0.85;
+    transform: translateX(-50%) translateY(4px);
+  }
+
+  footer{
+    position: relative;
+    z-index: 2;
+    margin-top: 8vh;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+    opacity: 0;
+    animation: rise 0.9s ease 1.1s forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .eyebrow, h1, .sub, .card, footer{ animation: none !important; opacity: 1 !important; transform: none !important; }
+    .card{ transition: none; }
+    .fog{ display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-wash"></div>
+  <div class="grain"></div>
+  <div class="fog" id="fog"></div>
+
+  <header>
+    <span class="eyebrow">Three files &mdash; one house</span>
+    <h1>Granny Games</h1>
+    <p class="sub">Pick a file off the board. She's already listening.</p>
+  </header>
+
+  <main class="board">
+    <a class="card" href="Granny%20v1.2.html" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny">
+      <span class="pin"></span>
+      <div class="frame">
+        <div class="photo"><img src="Granny%201.png" alt="Granny"></div>
+        <p class="label">Granny</p>
+        <span class="tag">File 01</span>
+      </div>
+      <span class="play-hint">▸ enter the house</span>
+    </a>
+
+    <a class="card" href="Granny%202.html" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2">
+      <span class="pin"></span>
+      <div class="frame">
+        <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2"></div>
+        <p class="label">Granny Chapter 2</p>
+        <span class="tag">File 02</span>
+      </div>
+      <span class="play-hint">▸ enter the house</span>
+    </a>
+
+    <a class="card" href="Granny%203.html" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3">
+      <span class="pin"></span>
+      <div class="frame">
+        <div class="photo"><img src="Granny%203.png" alt="Granny 3"></div>
+        <p class="label">Granny 3</p>
+        <span class="tag">File 03</span>
+      </div>
+      <span class="play-hint">▸ enter the house</span>
+    </a>
+  </main>
+
+  <footer>Five nights. No mercy. Choose wisely.</footer>
+
+<script>
+  (function(){
+    var fog = document.getElementById('fog');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || !fog) return;
+
+    function setPos(x, y){
+      fog.style.setProperty('--x', x + 'px');
+      fog.style.setProperty('--y', y + 'px');
+    }
+
+    window.addEventListener('mousemove', function(e){
+      setPos(e.clientX, e.clientY);
+    }, { passive: true });
+
+    window.addEventListener('touchmove', function(e){
+      if (e.touches && e.touches[0]){
+        setPos(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    // gentle default position before first interaction
+    setPos(window.innerWidth / 2, window.innerHeight * 0.32);
+  })();
+</script>
+
+</body>
+</html>
