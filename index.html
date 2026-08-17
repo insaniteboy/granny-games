@@ -36,7 +36,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8vh 6vw 10vh;
+    padding: 8vh 6vw 8vh;
   }
 
   /* ---------- ambient background ---------- */
@@ -62,7 +62,6 @@
     mix-blend-mode: overlay;
   }
 
-  /* flashlight / fog overlay, the signature interaction */
   .fog{
     position: fixed;
     inset: 0;
@@ -81,7 +80,7 @@
     position: relative;
     z-index: 2;
     text-align: center;
-    margin-bottom: 7vh;
+    margin-bottom: 6vh;
   }
 
   .eyebrow{
@@ -133,18 +132,48 @@
     100%{ opacity: 1; }
   }
 
-  /* ---------- board ---------- */
-  .board{
+  /* ---------- stage / carousel ---------- */
+  .stage{
     position: relative;
     z-index: 2;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(200px, 260px));
-    gap: 4.5vw 3.5vw;
+    width: min(94vw, 980px);
+  }
+
+  .carousel{
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .track{
+    display: flex;
+    width: 200%;
+    transition: transform 0.65s cubic-bezier(.22,.85,.28,1);
+  }
+
+  .stage.on-page-2 .track{
+    transform: translateX(-50%);
+  }
+
+  .page{
+    width: 50%;
+    flex-shrink: 0;
+    display: flex;
     justify-content: center;
   }
 
+  .board{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(190px, 250px));
+    gap: 4.5vw 3vw;
+    justify-content: center;
+  }
+
+  .board.single{
+    grid-template-columns: minmax(220px, 280px);
+  }
+
   @media (max-width: 780px){
-    .board{ grid-template-columns: minmax(220px, 300px); }
+    .board{ grid-template-columns: minmax(210px, 280px); }
   }
 
   .card{
@@ -267,10 +296,90 @@
     transform: translateX(-50%) translateY(4px);
   }
 
+  /* ---------- nav arrows ---------- */
+  .nav-arrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(217,194,94,0.35);
+    background: rgba(27,21,18,0.8);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  }
+
+  .nav-arrow svg{
+    width: 18px;
+    height: 18px;
+    stroke: var(--glow);
+    animation: nudge-right 1.7s ease-in-out infinite;
+  }
+
+  .nav-arrow.left svg{ animation-name: nudge-left; }
+
+  .nav-arrow.right{ right: -8px; }
+  .nav-arrow.left{ left: -8px; }
+
+  @media (min-width: 640px){
+    .nav-arrow.right{ right: -56px; }
+    .nav-arrow.left{ left: -56px; }
+  }
+
+  .nav-arrow:hover, .nav-arrow:focus-visible{
+    transform: translateY(-50%) scale(1.1);
+    border-color: var(--glow);
+    box-shadow: 0 0 22px rgba(217,194,94,0.35);
+    outline: none;
+  }
+
+  @keyframes nudge-right{
+    0%, 100%{ transform: translateX(0); }
+    50%{ transform: translateX(4px); }
+  }
+
+  @keyframes nudge-left{
+    0%, 100%{ transform: translateX(0); }
+    50%{ transform: translateX(-4px); }
+  }
+
+  .stage:not(.on-page-2) .nav-arrow.left{ opacity: 0; pointer-events: none; }
+  .stage.on-page-2 .nav-arrow.right{ opacity: 0; pointer-events: none; }
+
+  /* ---------- dots ---------- */
+  .dots{
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 5vh;
+  }
+
+  .dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(217,194,94,0.25);
+    transition: background 0.3s ease, transform 0.3s ease;
+  }
+
+  .stage:not(.on-page-2) .dot.d1,
+  .stage.on-page-2 .dot.d2{
+    background: var(--glow);
+    transform: scale(1.3);
+  }
+
   footer{
     position: relative;
     z-index: 2;
-    margin-top: 8vh;
+    margin-top: 5vh;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.68rem;
     letter-spacing: 0.15em;
@@ -285,6 +394,8 @@
     .eyebrow, h1, .sub, .card, footer{ animation: none !important; opacity: 1 !important; transform: none !important; }
     .card{ transition: none; }
     .fog{ display: none; }
+    .nav-arrow svg{ animation: none; }
+    .track{ transition: transform 0.2s linear; }
   }
 </style>
 </head>
@@ -300,37 +411,73 @@
     <p class="sub">Pick a file off the board. She's already listening.</p>
   </header>
 
-  <main class="board">
-    <a class="card" href="Granny%20v1.2.html" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny">
-      <span class="pin"></span>
-      <div class="frame">
-        <div class="photo"><img src="Granny%201.png" alt="Granny"></div>
-        <p class="label">Granny</p>
-        <span class="tag">File 01</span>
-      </div>
-      <span class="play-hint">▸ enter the house</span>
-    </a>
+  <div class="stage" id="stage">
+    <div class="carousel">
+      <div class="track">
 
-    <a class="card" href="Granny%202.html" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2">
-      <span class="pin"></span>
-      <div class="frame">
-        <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2"></div>
-        <p class="label">Granny Chapter 2</p>
-        <span class="tag">File 02</span>
-      </div>
-      <span class="play-hint">▸ enter the house</span>
-    </a>
+        <div class="page">
+          <div class="board">
+            <a class="card" href="Granny%20v1.2.html" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny">
+              <span class="pin"></span>
+              <div class="frame">
+                <div class="photo"><img src="Granny%201.png" alt="Granny"></div>
+                <p class="label">Granny</p>
+                <span class="tag">File 01</span>
+              </div>
+              <span class="play-hint">▸ enter the house</span>
+            </a>
 
-    <a class="card" href="Granny%203.html" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3">
-      <span class="pin"></span>
-      <div class="frame">
-        <div class="photo"><img src="Granny%203.png" alt="Granny 3"></div>
-        <p class="label">Granny 3</p>
-        <span class="tag">File 03</span>
+            <a class="card" href="Granny%202.html" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2">
+              <span class="pin"></span>
+              <div class="frame">
+                <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2"></div>
+                <p class="label">Granny Chapter 2</p>
+                <span class="tag">File 02</span>
+              </div>
+              <span class="play-hint">▸ enter the house</span>
+            </a>
+
+            <a class="card" href="Granny%203.html" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3">
+              <span class="pin"></span>
+              <div class="frame">
+                <div class="photo"><img src="Granny%203.png" alt="Granny 3"></div>
+                <p class="label">Granny 3</p>
+                <span class="tag">File 03</span>
+              </div>
+              <span class="play-hint">▸ enter the house</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="page">
+          <div class="board single">
+            <a class="card" href="Granny%20Multiplayer.html" style="--rot:-3deg" aria-label="Play Granny Multiplayer">
+              <span class="pin"></span>
+              <div class="frame">
+                <div class="photo"><img src="Granny%20Multiplayer.jpg" alt="Granny Multiplayer"></div>
+                <p class="label">Granny Multiplayer</p>
+                <span class="tag">Co-op mode</span>
+              </div>
+              <span class="play-hint">▸ enter the house</span>
+            </a>
+          </div>
+        </div>
+
       </div>
-      <span class="play-hint">▸ enter the house</span>
-    </a>
-  </main>
+    </div>
+
+    <button class="nav-arrow right" id="nextBtn" aria-label="Next: Granny Multiplayer">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+    </button>
+    <button class="nav-arrow left" id="backBtn" aria-label="Back to the three files">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>
+    </button>
+  </div>
+
+  <div class="dots">
+    <span class="dot d1"></span>
+    <span class="dot d2"></span>
+  </div>
 
   <footer>Five nights. No mercy. Choose wisely.</footer>
 
@@ -338,25 +485,35 @@
   (function(){
     var fog = document.getElementById('fog');
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || !fog) return;
 
-    function setPos(x, y){
-      fog.style.setProperty('--x', x + 'px');
-      fog.style.setProperty('--y', y + 'px');
+    if (fog && !reduced){
+      function setPos(x, y){
+        fog.style.setProperty('--x', x + 'px');
+        fog.style.setProperty('--y', y + 'px');
+      }
+      window.addEventListener('mousemove', function(e){ setPos(e.clientX, e.clientY); }, { passive: true });
+      window.addEventListener('touchmove', function(e){
+        if (e.touches && e.touches[0]) setPos(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      setPos(window.innerWidth / 2, window.innerHeight * 0.32);
+    } else if (fog){
+      fog.style.display = 'none';
     }
 
-    window.addEventListener('mousemove', function(e){
-      setPos(e.clientX, e.clientY);
-    }, { passive: true });
+    var stage = document.getElementById('stage');
+    var nextBtn = document.getElementById('nextBtn');
+    var backBtn = document.getElementById('backBtn');
 
-    window.addEventListener('touchmove', function(e){
-      if (e.touches && e.touches[0]){
-        setPos(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    }, { passive: true });
+    function goNext(){ stage.classList.add('on-page-2'); }
+    function goBack(){ stage.classList.remove('on-page-2'); }
 
-    // gentle default position before first interaction
-    setPos(window.innerWidth / 2, window.innerHeight * 0.32);
+    nextBtn.addEventListener('click', goNext);
+    backBtn.addEventListener('click', goBack);
+
+    window.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowRight') goNext();
+      if (e.key === 'ArrowLeft') goBack();
+    });
   })();
 </script>
 
