@@ -1,0 +1,312 @@
+<html lang="en-us"><head></head><body><style>
+  #loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 1s ease;
+  }
+
+  #loading-screen span {
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 2rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+
+  #loading-screen.show-text span {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #loading-screen.fade-out {
+    opacity: 0;
+  }
+</style>
+
+<div id="loading-screen">
+  <span>Made by ShadowedSins</span>
+</div>
+
+<script>
+  const screen = document.getElementById('loading-screen');
+
+  // Step 1: fade text up into view
+  setTimeout(() => {
+    screen.classList.add('show-text');
+  }, 100);
+
+  // Step 2: fade everything out (text + black background) around the 3s mark
+  setTimeout(() => {
+    screen.classList.add('fade-out');
+  }, 2000);
+
+  // Step 3: remove from DOM after fade-out transition finishes
+  setTimeout(() => {
+    screen.remove();
+  }, 3000);
+</script><style>
+  #notif-banner {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+    color: #fff;
+    padding: 16px 28px;
+    border-radius: 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 99999;
+    opacity: 0;
+    animation: slideDown 0.6s ease forwards, fadeOut 0.8s ease forwards 4.2s;
+  }
+
+  #notif-banner svg {
+    flex-shrink: 0;
+  }
+
+  @keyframes slideDown {
+    from {
+      top: -100px;
+      opacity: 0;
+    }
+    to {
+      top: 24px;
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      top: 24px;
+    }
+    to {
+      opacity: 0;
+      top: -20px;
+    }
+  }
+</style>
+
+<div id="notif-banner">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5c5c" stroke-width="2">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="8" x2="12" y2="12"></line>
+    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+  </svg>
+  This is NOT compatible with Chromebooks
+</div>
+
+<script>
+  setTimeout(() => {
+    document.getElementById('notif-banner').remove();
+  }, 5000);
+</script><module>
+<moduleprefs title="Google.com">
+<content type="html"><!--[CDATA[
+
+
+<!DOCTYPE html-->
+
+<script>
+  document.body.addEventListener('click', function () {
+    // If we're inside an iframe, we're already in the "about:blank" wrapper tab — do nothing
+    if (window.self !== window.top) return;
+
+    if (location.href !== 'about:blank') {
+      const newTab = window.open('about:blank', '_blank');
+
+      if (newTab) {
+        newTab.document.write(`
+          <html>
+            <head><title></title></head>
+            <body style="margin:0;padding:0;">
+              <iframe src="${location.href}" style="border:none;width:100vw;height:100vh;"></iframe>
+            </body>
+          </html>
+        `);
+        newTab.document.close();
+      }
+
+      location.href = 'about:blank';
+    }
+  });
+</script>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Unity WebGL Player | Granny 3</title>
+<link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/TemplateData/favicon.ico">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/TemplateData/style.css">
+<!-- Yandex Games SDK -->
+<script src="https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/v2.79e5f6f6325b0faa1b66.js"></script>
+
+
+<div id="unity-container" style="position: absolute; width: 100%; height: 100%; left: 0%; top: 0%;">
+<canvas id="unity-canvas" style="position: absolute; width: 100%; height: 100%; cursor: default;" width="1320" height="925"></canvas>
+<div id="unity-loading-bar" style="display: none;">
+<div id="unity-logo"></div>
+<div id="unity-progress-bar-empty">
+<div id="unity-progress-bar-full" style="width: 100%;"></div>
+</div>
+</div>
+<div id="unity-warning" style="display: block;"> <div style="background: yellow; padding: 10px;">HTTP Response Header "Content-Type" configured incorrectly on the server for file blob:https://901664817-atari-embeds.googleusercontent.com/ce581515-4ad4-4ae0-a791-cc74b29c1abc , should be "application/wasm". Startup time performance will suffer.</div></div>
+</div>
+<script>
+        YaGames
+        .init()
+        .then(ysdk => {
+            console.log('Yandex SDK initialized');
+            window.ysdk = ysdk;
+            initPlayer();
+        });
+        
+        var player;
+
+        function initPlayer() {
+            return ysdk.getPlayer({ scopes: false }).then(_player => {
+                    player = _player;
+
+                    return player;
+                });
+        }
+
+    </script>
+<script>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/Build";
+      var loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
+
+      function mergeFiles(fileParts) {
+        return new Promise((resolve, reject) => {
+            let buffers = [];
+            function fetchPart(index) {
+                if (index >= fileParts.length) {
+                    let mergedBlob = new Blob(buffers);
+                    let mergedFileUrl = URL.createObjectURL(mergedBlob);
+                    resolve(mergedFileUrl);
+                    return;
+                }
+                fetch(fileParts[index])
+                    .then(response => response.arrayBuffer())
+                    .then(data => {
+                        buffers.push(data);
+                        fetchPart(index + 1);
+                    })
+                    .catch(reject);
+            }
+            fetchPart(0);
+        });
+      }
+
+      var wasmParts = [
+          buildUrl + "/bd8d511ba06d09159c93b032551b04fb.wasm.part0",
+          buildUrl + "/bd8d511ba06d09159c93b032551b04fb.wasm.part1",
+          buildUrl + "/bd8d511ba06d09159c93b032551b04fb.wasm.part2"
+      ];
+
+      var dataParts = [
+          buildUrl + "/fef8fdd7cfc9e5a5001034b01fa3647b.data.part0",
+          buildUrl + "/fef8fdd7cfc9e5a5001034b01fa3647b.data.part1"
+      ];
+
+      Promise.all([
+          mergeFiles(wasmParts),
+          mergeFiles(dataParts)
+      ]).then(([wasmUrl, dataUrl]) => {
+          var config = {
+              dataUrl: dataUrl,
+              frameworkUrl: buildUrl + "/e12dac5a3f5e3f677b009118afef20b7.framework.js",
+              codeUrl: wasmUrl,
+              streamingAssetsUrl: "StreamingAssets",
+              companyName: "Games Place",
+              productName: "Granny 3",
+              productVersion: "0.1",
+              showBanner: unityShowBanner,
+          };
+
+          if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+              var meta = document.createElement('meta');
+              meta.name = 'viewport';
+              meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+              document.getElementsByTagName('head')[0].appendChild(meta);
+              container.className = "unity-mobile";
+              canvas.className = "unity-mobile";
+          } else {
+              canvas.style.width = "100%";
+              canvas.style.height = "100%";
+          }
+
+          loadingBar.style.display = "block";
+          
+          // myGameInstance global olarak tanımlanıyor
+          window.myGameInstance = null;
+
+          var script = document.createElement("script");
+          script.src = loaderUrl;
+          script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+              progressBarFull.style.width = 100 * progress + "%";
+                  }).then((unityInstance) => {
+                    window.myGameInstance = unityInstance; // Global hale getirildi
+                    loadingBar.style.display = "none";
+                  }).catch((message) => {
+                    console.error("Unity yükleme hatası:", message);
+                    alert(message);
+                  });
+                };
+
+          document.body.appendChild(script);
+      }).catch(error => {
+          console.error("Dosya birleştirme hatası:", error);
+      });
+
+</script>
+
+
+
+
+
+
+
+]]&gt;</content>
+</moduleprefs></module><script src="https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/Build/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js"></script><script src="https://cdn.jsdelivr.net/gh/ranny31ranny/5471@main/Build/e12dac5a3f5e3f677b009118afef20b7.framework.js"></script></body></html>
