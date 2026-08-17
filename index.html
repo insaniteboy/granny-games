@@ -72,7 +72,6 @@
     mix-blend-mode: overlay;
   }
 
-  /* flashlight / fog overlay — lighter now, with idle drift handled in JS */
   .fog{
     position: fixed;
     inset: 0;
@@ -92,22 +91,26 @@
     width: min(94vw, 980px);
   }
 
+  .stage-inner{ width: 100%; }
+
   .header-carousel{
     overflow: hidden;
     width: 100%;
     margin-bottom: 6vh;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
   }
+
+  .header-carousel.kick{ animation: swing-kick 0.6s cubic-bezier(.22,.9,.32,1); }
 
   .header-track{
     display: flex;
     width: 200%;
-    transition: transform 0.65s cubic-bezier(.22,.85,.28,1), filter 0.28s ease;
-    filter: blur(0px);
+    transform: translateX(0%);
+    transition: transform 0.8s cubic-bezier(.34,1.56,.64,1);
   }
 
   .stage.on-page-2 .header-track{ transform: translateX(-50%); }
-  .stage.transitioning .header-track,
-  .stage.transitioning .track{ filter: blur(9px); }
 
   .head-page{
     width: 50%;
@@ -165,17 +168,29 @@
     100%{ opacity: 1; }
   }
 
+  /* swoosh applied to the carousel wrappers on every page turn */
+  @keyframes swing-kick{
+    0%{ transform: scale(1,1) rotate(0deg); filter: blur(0px); }
+    28%{ transform: scale(1.07, 0.93) rotate(-1.6deg); filter: blur(10px); }
+    58%{ transform: scale(0.97, 1.03) rotate(0.9deg); filter: blur(3px); }
+    100%{ transform: scale(1,1) rotate(0deg); filter: blur(0px); }
+  }
+
   /* ---------- carousel / board ---------- */
   .carousel{
     overflow: hidden;
     width: 100%;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
   }
+
+  .carousel.kick{ animation: swing-kick 0.6s cubic-bezier(.22,.9,.32,1); }
 
   .track{
     display: flex;
     width: 200%;
-    transition: transform 0.65s cubic-bezier(.22,.85,.28,1), filter 0.28s ease;
-    filter: blur(0px);
+    transform: translateX(0%);
+    transition: transform 0.8s cubic-bezier(.34,1.56,.64,1);
   }
 
   .stage.on-page-2 .track{ transform: translateX(-50%); }
@@ -219,6 +234,14 @@
     60%{ opacity: 1; }
     100%{ transform: translateY(0) rotate(var(--rot)) scale(1); opacity: 1; }
   }
+
+  /* played on the outgoing page's cards the instant you turn the page */
+  @keyframes card-exit{
+    0%{ opacity: 1; transform: translateY(0) rotate(var(--rot)) scale(1); }
+    100%{ opacity: 0.2; transform: translateY(16px) rotate(calc(var(--rot) * 2.6)) scale(0.86); }
+  }
+
+  .card.exit{ animation: card-exit 0.34s ease forwards; }
 
   .card:hover, .card:focus-visible{
     transform: translateY(-8px) rotate(0deg) scale(1.035);
@@ -448,7 +471,8 @@
     .fog{ display: none; }
     .nav-arrow{ animation: none; }
     .nav-arrow svg{ animation: none; }
-    .header-track, .track{ transition: transform 0.2s linear; filter: none !important; }
+    .header-track, .track{ transition: transform 0.2s linear; }
+    .carousel.kick, .header-carousel.kick, .card.exit{ animation: none !important; filter: none !important; }
   }
 </style>
 </head>
@@ -459,74 +483,77 @@
   <div class="fog" id="fog"></div>
 
   <div class="stage" id="stage">
+    <div class="stage-inner">
 
-    <div class="header-carousel">
-      <div class="header-track">
-        <div class="head-page">
-          <span class="eyebrow">Three files &mdash; one house</span>
-          <h1>Granny Games</h1>
-          <p class="sub">Pick a file off the board. She's already listening.</p>
-        </div>
-        <div class="head-page">
-          <span class="eyebrow">Bring a friend &mdash; if she'll let you</span>
-          <h1>Multiplayer</h1>
-          <p class="sub">Sneak, hide, and survive the house together.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="carousel">
-      <div class="track">
-
-        <div class="page">
-          <div class="board">
-            <a class="card" href="Granny%20v1.2.html" target="_blank" rel="noopener noreferrer" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny (opens in a new tab)">
-              <span class="pin"></span>
-              <div class="frame">
-                <div class="photo"><img src="Granny%201.png" alt="Granny" draggable="false"></div>
-                <p class="label">Granny</p>
-                <span class="tag">File 01</span>
-              </div>
-              <span class="play-hint">▸ enter the house</span>
-            </a>
-
-            <a class="card" href="Granny%202.html" target="_blank" rel="noopener noreferrer" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2 (opens in a new tab)">
-              <span class="pin"></span>
-              <div class="frame">
-                <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2" draggable="false"></div>
-                <p class="label">Granny Chapter 2</p>
-                <span class="tag">File 02</span>
-              </div>
-              <span class="play-hint">▸ enter the house</span>
-            </a>
-
-            <a class="card" href="Granny%203.html" target="_blank" rel="noopener noreferrer" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3 (opens in a new tab)">
-              <span class="pin"></span>
-              <div class="frame">
-                <div class="photo"><img src="Granny%203.png" alt="Granny 3" draggable="false"></div>
-                <p class="label">Granny 3</p>
-                <span class="tag">File 03</span>
-              </div>
-              <span class="play-hint">▸ enter the house</span>
-            </a>
+      <div class="header-carousel">
+        <div class="header-track">
+          <div class="head-page">
+            <span class="eyebrow">Three files &mdash; one house</span>
+            <h1>Granny Games</h1>
+            <p class="sub">Pick a file off the board. She's already listening.</p>
+          </div>
+          <div class="head-page">
+            <span class="eyebrow">Bring a friend &mdash; if she'll let you</span>
+            <h1>Multiplayer</h1>
+            <p class="sub">Sneak, hide, and survive the house together.</p>
           </div>
         </div>
-
-        <div class="page">
-          <div class="board single">
-            <a class="card" href="Granny%20Multiplayer.html" target="_blank" rel="noopener noreferrer" style="--rot:-3deg" aria-label="Play Granny Multiplayer (opens in a new tab)">
-              <span class="pin"></span>
-              <div class="frame">
-                <div class="photo"><img src="Granny%20Multiplayer.jpg" alt="Granny Multiplayer" draggable="false"></div>
-                <p class="label">Granny Multiplayer</p>
-                <span class="tag">Co-op mode</span>
-              </div>
-              <span class="play-hint">▸ enter the house</span>
-            </a>
-          </div>
-        </div>
-
       </div>
+
+      <div class="carousel">
+        <div class="track">
+
+          <div class="page">
+            <div class="board">
+              <a class="card" href="Granny%20v1.2.html" target="_blank" rel="noopener noreferrer" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny (opens in a new tab)">
+                <span class="pin"></span>
+                <div class="frame">
+                  <div class="photo"><img src="Granny%201.png" alt="Granny" draggable="false"></div>
+                  <p class="label">Granny</p>
+                  <span class="tag">File 01</span>
+                </div>
+                <span class="play-hint">▸ enter the house</span>
+              </a>
+
+              <a class="card" href="Granny%202.html" target="_blank" rel="noopener noreferrer" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2 (opens in a new tab)">
+                <span class="pin"></span>
+                <div class="frame">
+                  <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2" draggable="false"></div>
+                  <p class="label">Granny Chapter 2</p>
+                  <span class="tag">File 02</span>
+                </div>
+                <span class="play-hint">▸ enter the house</span>
+              </a>
+
+              <a class="card" href="Granny%203.html" target="_blank" rel="noopener noreferrer" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3 (opens in a new tab)">
+                <span class="pin"></span>
+                <div class="frame">
+                  <div class="photo"><img src="Granny%203.png" alt="Granny 3" draggable="false"></div>
+                  <p class="label">Granny 3</p>
+                  <span class="tag">File 03</span>
+                </div>
+                <span class="play-hint">▸ enter the house</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="page">
+            <div class="board single">
+              <a class="card" href="Granny%20Multiplayer.html" target="_blank" rel="noopener noreferrer" style="--rot:-3deg; --delay:0s" aria-label="Play Granny Multiplayer (opens in a new tab)">
+                <span class="pin"></span>
+                <div class="frame">
+                  <div class="photo"><img src="Granny%20Multiplayer.jpg" alt="Granny Multiplayer" draggable="false"></div>
+                  <p class="label">Granny Multiplayer</p>
+                  <span class="tag">Co-op mode</span>
+                </div>
+                <span class="play-hint">▸ enter the house</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
     <button class="nav-arrow right" id="nextBtn" aria-label="Next: Granny Multiplayer">
@@ -550,8 +577,9 @@
 
 <script>
   (function(){
-    var fog = document.getElementById('fog');
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var fog = document.getElementById('fog');
+    var fogAmp = 1;
 
     if (fog && !reduced){
       var targetX = window.innerWidth / 2;
@@ -569,10 +597,11 @@
 
       function loop(now){
         var t = (now - start) / 1000;
+        fogAmp += (1 - fogAmp) * 0.045;
         curX += (targetX - curX) * 0.06;
         curY += (targetY - curY) * 0.06;
-        var driftX = Math.sin(t * 0.6) * 16;
-        var driftY = Math.cos(t * 0.5) * 12;
+        var driftX = Math.sin(t * 0.7) * 16 * fogAmp;
+        var driftY = Math.cos(t * 0.6) * 12 * fogAmp;
         fog.style.setProperty('--x', (curX + driftX) + 'px');
         fog.style.setProperty('--y', (curY + driftY) + 'px');
         requestAnimationFrame(loop);
@@ -583,18 +612,63 @@
     }
 
     var stage = document.getElementById('stage');
+    var carousel = document.querySelector('.carousel');
+    var headerCarousel = document.querySelector('.header-carousel');
+    var pages = document.querySelectorAll('.track .page');
     var nextBtn = document.getElementById('nextBtn');
     var backBtn = document.getElementById('backBtn');
     var busy = false;
 
-    function transitionTo(pageClassAdd){
-      if (busy) return;
+    function kick(el){
+      if (!el) return;
+      el.classList.remove('kick');
+      void el.offsetWidth;
+      el.classList.add('kick');
+    }
+
+    function playExit(pageEl){
+      if (!pageEl) return;
+      var cards = pageEl.querySelectorAll('.card');
+      cards.forEach(function(c){
+        c.classList.remove('exit');
+        void c.offsetWidth;
+        c.classList.add('exit');
+      });
+      setTimeout(function(){
+        cards.forEach(function(c){ c.classList.remove('exit'); });
+      }, 380);
+    }
+
+    function playEnter(pageEl){
+      if (!pageEl) return;
+      var cards = pageEl.querySelectorAll('.card');
+      cards.forEach(function(c){
+        c.style.animation = 'none';
+        void c.offsetWidth;
+        c.style.animation = '';
+      });
+    }
+
+    function transitionTo(goNext){
+      var onPage2 = stage.classList.contains('on-page-2');
+      if (busy || (goNext && onPage2) || (!goNext && !onPage2)) return;
       busy = true;
-      stage.classList.add('transitioning');
-      if (pageClassAdd) stage.classList.add('on-page-2');
+
+      var outgoing = goNext ? pages[0] : pages[1];
+      var incoming = goNext ? pages[1] : pages[0];
+
+      if (!reduced){
+        playExit(outgoing);
+        playEnter(incoming);
+        kick(carousel);
+        kick(headerCarousel);
+        fogAmp = 3.4;
+      }
+
+      if (goNext) stage.classList.add('on-page-2');
       else stage.classList.remove('on-page-2');
-      setTimeout(function(){ stage.classList.remove('transitioning'); }, 300);
-      setTimeout(function(){ busy = false; }, 650);
+
+      setTimeout(function(){ busy = false; }, 820);
     }
 
     nextBtn.addEventListener('click', function(){ transitionTo(true); });
