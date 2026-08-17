@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Granny Games</title>
+<link rel="icon" type="image/gif" href="icon.gif">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -18,7 +19,7 @@
     --muted: #8f8576;
   }
 
-  *{ box-sizing: border-box; }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   html, body{
     margin:0;
@@ -37,14 +38,23 @@
     align-items: center;
     justify-content: center;
     padding: 8vh 6vw 8vh;
+    -webkit-user-select: none;
+    user-select: none;
   }
+
+  ::selection{
+    background: rgba(217,194,94,0.35);
+    color: var(--paper);
+  }
+
+  a, button{ -webkit-tap-highlight-color: transparent; outline-color: var(--glow); }
 
   /* ---------- ambient background ---------- */
   .bg-wash{
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse at 50% -10%, #241a13 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 8%, #2c2015 0%, transparent 58%),
       repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 34px),
       var(--bg);
     z-index: 0;
@@ -62,25 +72,48 @@
     mix-blend-mode: overlay;
   }
 
+  /* flashlight / fog overlay — lighter now, with idle drift handled in JS */
   .fog{
     position: fixed;
     inset: 0;
     z-index: 4;
     pointer-events: none;
-    background: radial-gradient(circle 260px at var(--x,50%) var(--y,32%),
+    background: radial-gradient(circle 430px at var(--x,50%) var(--y,32%),
       transparent 0%,
-      rgba(13,11,9,0.35) 45%,
-      rgba(13,11,9,0.86) 75%,
-      rgba(13,11,9,0.97) 100%);
-    transition: background 60ms linear;
+      rgba(13,11,9,0.2) 45%,
+      rgba(13,11,9,0.62) 75%,
+      rgba(13,11,9,0.86) 100%);
   }
 
-  /* ---------- header ---------- */
-  header{
+  /* ---------- stage ---------- */
+  .stage{
     position: relative;
     z-index: 2;
-    text-align: center;
+    width: min(94vw, 980px);
+  }
+
+  .header-carousel{
+    overflow: hidden;
+    width: 100%;
     margin-bottom: 6vh;
+  }
+
+  .header-track{
+    display: flex;
+    width: 200%;
+    transition: transform 0.65s cubic-bezier(.22,.85,.28,1), filter 0.28s ease;
+    filter: blur(0px);
+  }
+
+  .stage.on-page-2 .header-track{ transform: translateX(-50%); }
+  .stage.transitioning .header-track,
+  .stage.transitioning .track{ filter: blur(9px); }
+
+  .head-page{
+    width: 50%;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 0 2vw;
   }
 
   .eyebrow{
@@ -132,13 +165,7 @@
     100%{ opacity: 1; }
   }
 
-  /* ---------- stage / carousel ---------- */
-  .stage{
-    position: relative;
-    z-index: 2;
-    width: min(94vw, 980px);
-  }
-
+  /* ---------- carousel / board ---------- */
   .carousel{
     overflow: hidden;
     width: 100%;
@@ -147,12 +174,11 @@
   .track{
     display: flex;
     width: 200%;
-    transition: transform 0.65s cubic-bezier(.22,.85,.28,1);
+    transition: transform 0.65s cubic-bezier(.22,.85,.28,1), filter 0.28s ease;
+    filter: blur(0px);
   }
 
-  .stage.on-page-2 .track{
-    transform: translateX(-50%);
-  }
+  .stage.on-page-2 .track{ transform: translateX(-50%); }
 
   .page{
     width: 50%;
@@ -168,9 +194,7 @@
     justify-content: center;
   }
 
-  .board.single{
-    grid-template-columns: minmax(220px, 280px);
-  }
+  .board.single{ grid-template-columns: minmax(220px, 280px); }
 
   @media (max-width: 780px){
     .board{ grid-template-columns: minmax(210px, 280px); }
@@ -237,6 +261,7 @@
     display: block;
     transform: scale(1.06);
     transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+    -webkit-user-drag: none;
   }
 
   .card:hover .photo img, .card:focus-visible .photo img{
@@ -298,45 +323,46 @@
 
   /* ---------- nav arrows ---------- */
   .nav-arrow{
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    width: 46px;
-    height: 46px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    border: 1px solid rgba(217,194,94,0.35);
-    background: rgba(27,21,18,0.8);
-    backdrop-filter: blur(2px);
+    border: 1px solid rgba(217,194,94,0.4);
+    background: linear-gradient(160deg, #241c17, #150f0c);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 5;
+    z-index: 6;
+    padding: 0;
+    animation: pulse-ring 2.6s ease-in-out infinite;
     transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
   }
 
+  .nav-arrow.right{ right: clamp(14px, 4vw, 64px); }
+  .nav-arrow.left{ left: clamp(14px, 4vw, 64px); }
+
   .nav-arrow svg{
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     stroke: var(--glow);
     animation: nudge-right 1.7s ease-in-out infinite;
   }
 
   .nav-arrow.left svg{ animation-name: nudge-left; }
 
-  .nav-arrow.right{ right: -8px; }
-  .nav-arrow.left{ left: -8px; }
-
-  @media (min-width: 640px){
-    .nav-arrow.right{ right: -56px; }
-    .nav-arrow.left{ left: -56px; }
+  .nav-arrow:hover, .nav-arrow:focus-visible{
+    transform: translateY(-50%) scale(1.12);
+    border-color: var(--glow);
+    box-shadow: 0 0 26px rgba(217,194,94,0.45);
+    outline: none;
   }
 
-  .nav-arrow:hover, .nav-arrow:focus-visible{
-    transform: translateY(-50%) scale(1.1);
-    border-color: var(--glow);
-    box-shadow: 0 0 22px rgba(217,194,94,0.35);
-    outline: none;
+  @keyframes pulse-ring{
+    0%, 100%{ box-shadow: 0 0 0 rgba(217,194,94,0); }
+    50%{ box-shadow: 0 0 16px rgba(217,194,94,0.22); }
   }
 
   @keyframes nudge-right{
@@ -349,8 +375,34 @@
     50%{ transform: translateX(-4px); }
   }
 
-  .stage:not(.on-page-2) .nav-arrow.left{ opacity: 0; pointer-events: none; }
-  .stage.on-page-2 .nav-arrow.right{ opacity: 0; pointer-events: none; }
+  .arrow-label{
+    position: fixed;
+    top: calc(50% + 40px);
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 6;
+    white-space: nowrap;
+  }
+
+  .arrow-label.right{ right: clamp(2px, 3vw, 52px); }
+  .arrow-label.left{ left: clamp(2px, 3vw, 52px); }
+
+  .nav-arrow.right:hover ~ .arrow-label.right,
+  .nav-arrow.right:focus-visible ~ .arrow-label.right{ opacity: 0.85; }
+  .nav-arrow.left:hover ~ .arrow-label.left,
+  .nav-arrow.left:focus-visible ~ .arrow-label.left{ opacity: 0.85; }
+
+  .stage:not(.on-page-2) .nav-arrow.left,
+  .stage:not(.on-page-2) .arrow-label.left{ opacity: 0; pointer-events: none; }
+  .stage.on-page-2 .nav-arrow.right,
+  .stage.on-page-2 .arrow-label.right{ opacity: 0; pointer-events: none; }
 
   /* ---------- dots ---------- */
   .dots{
@@ -394,8 +446,9 @@
     .eyebrow, h1, .sub, .card, footer{ animation: none !important; opacity: 1 !important; transform: none !important; }
     .card{ transition: none; }
     .fog{ display: none; }
+    .nav-arrow{ animation: none; }
     .nav-arrow svg{ animation: none; }
-    .track{ transition: transform 0.2s linear; }
+    .header-track, .track{ transition: transform 0.2s linear; filter: none !important; }
   }
 </style>
 </head>
@@ -405,42 +458,52 @@
   <div class="grain"></div>
   <div class="fog" id="fog"></div>
 
-  <header>
-    <span class="eyebrow">Three files &mdash; one house</span>
-    <h1>Granny Games</h1>
-    <p class="sub">Pick a file off the board. She's already listening.</p>
-  </header>
-
   <div class="stage" id="stage">
+
+    <div class="header-carousel">
+      <div class="header-track">
+        <div class="head-page">
+          <span class="eyebrow">Three files &mdash; one house</span>
+          <h1>Granny Games</h1>
+          <p class="sub">Pick a file off the board. She's already listening.</p>
+        </div>
+        <div class="head-page">
+          <span class="eyebrow">Bring a friend &mdash; if she'll let you</span>
+          <h1>Multiplayer</h1>
+          <p class="sub">Sneak, hide, and survive the house together.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="carousel">
       <div class="track">
 
         <div class="page">
           <div class="board">
-            <a class="card" href="Granny%20v1.2.html" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny">
+            <a class="card" href="Granny%20v1.2.html" target="_blank" rel="noopener noreferrer" style="--rot:-4deg; --delay:0.05s" aria-label="Play Granny (opens in a new tab)">
               <span class="pin"></span>
               <div class="frame">
-                <div class="photo"><img src="Granny%201.png" alt="Granny"></div>
+                <div class="photo"><img src="Granny%201.png" alt="Granny" draggable="false"></div>
                 <p class="label">Granny</p>
                 <span class="tag">File 01</span>
               </div>
               <span class="play-hint">▸ enter the house</span>
             </a>
 
-            <a class="card" href="Granny%202.html" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2">
+            <a class="card" href="Granny%202.html" target="_blank" rel="noopener noreferrer" style="--rot:2.5deg; --delay:0.2s" aria-label="Play Granny Chapter 2 (opens in a new tab)">
               <span class="pin"></span>
               <div class="frame">
-                <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2"></div>
+                <div class="photo"><img src="Granny%202.png" alt="Granny Chapter 2" draggable="false"></div>
                 <p class="label">Granny Chapter 2</p>
                 <span class="tag">File 02</span>
               </div>
               <span class="play-hint">▸ enter the house</span>
             </a>
 
-            <a class="card" href="Granny%203.html" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3">
+            <a class="card" href="Granny%203.html" target="_blank" rel="noopener noreferrer" style="--rot:-2deg; --delay:0.35s" aria-label="Play Granny 3 (opens in a new tab)">
               <span class="pin"></span>
               <div class="frame">
-                <div class="photo"><img src="Granny%203.png" alt="Granny 3"></div>
+                <div class="photo"><img src="Granny%203.png" alt="Granny 3" draggable="false"></div>
                 <p class="label">Granny 3</p>
                 <span class="tag">File 03</span>
               </div>
@@ -451,10 +514,10 @@
 
         <div class="page">
           <div class="board single">
-            <a class="card" href="Granny%20Multiplayer.html" style="--rot:-3deg" aria-label="Play Granny Multiplayer">
+            <a class="card" href="Granny%20Multiplayer.html" target="_blank" rel="noopener noreferrer" style="--rot:-3deg" aria-label="Play Granny Multiplayer (opens in a new tab)">
               <span class="pin"></span>
               <div class="frame">
-                <div class="photo"><img src="Granny%20Multiplayer.jpg" alt="Granny Multiplayer"></div>
+                <div class="photo"><img src="Granny%20Multiplayer.jpg" alt="Granny Multiplayer" draggable="false"></div>
                 <p class="label">Granny Multiplayer</p>
                 <span class="tag">Co-op mode</span>
               </div>
@@ -469,9 +532,13 @@
     <button class="nav-arrow right" id="nextBtn" aria-label="Next: Granny Multiplayer">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
     </button>
+    <span class="arrow-label right">Multiplayer</span>
+
     <button class="nav-arrow left" id="backBtn" aria-label="Back to the three files">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"></polyline></svg>
     </button>
+    <span class="arrow-label left">Back</span>
+
   </div>
 
   <div class="dots">
@@ -487,15 +554,30 @@
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (fog && !reduced){
-      function setPos(x, y){
-        fog.style.setProperty('--x', x + 'px');
-        fog.style.setProperty('--y', y + 'px');
-      }
-      window.addEventListener('mousemove', function(e){ setPos(e.clientX, e.clientY); }, { passive: true });
-      window.addEventListener('touchmove', function(e){
-        if (e.touches && e.touches[0]) setPos(e.touches[0].clientX, e.touches[0].clientY);
+      var targetX = window.innerWidth / 2;
+      var targetY = window.innerHeight * 0.36;
+      var curX = targetX, curY = targetY;
+      var start = performance.now();
+
+      window.addEventListener('mousemove', function(e){
+        targetX = e.clientX; targetY = e.clientY;
       }, { passive: true });
-      setPos(window.innerWidth / 2, window.innerHeight * 0.32);
+
+      window.addEventListener('touchmove', function(e){
+        if (e.touches && e.touches[0]){ targetX = e.touches[0].clientX; targetY = e.touches[0].clientY; }
+      }, { passive: true });
+
+      function loop(now){
+        var t = (now - start) / 1000;
+        curX += (targetX - curX) * 0.06;
+        curY += (targetY - curY) * 0.06;
+        var driftX = Math.sin(t * 0.6) * 16;
+        var driftY = Math.cos(t * 0.5) * 12;
+        fog.style.setProperty('--x', (curX + driftX) + 'px');
+        fog.style.setProperty('--y', (curY + driftY) + 'px');
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
     } else if (fog){
       fog.style.display = 'none';
     }
@@ -503,16 +585,24 @@
     var stage = document.getElementById('stage');
     var nextBtn = document.getElementById('nextBtn');
     var backBtn = document.getElementById('backBtn');
+    var busy = false;
 
-    function goNext(){ stage.classList.add('on-page-2'); }
-    function goBack(){ stage.classList.remove('on-page-2'); }
+    function transitionTo(pageClassAdd){
+      if (busy) return;
+      busy = true;
+      stage.classList.add('transitioning');
+      if (pageClassAdd) stage.classList.add('on-page-2');
+      else stage.classList.remove('on-page-2');
+      setTimeout(function(){ stage.classList.remove('transitioning'); }, 300);
+      setTimeout(function(){ busy = false; }, 650);
+    }
 
-    nextBtn.addEventListener('click', goNext);
-    backBtn.addEventListener('click', goBack);
+    nextBtn.addEventListener('click', function(){ transitionTo(true); });
+    backBtn.addEventListener('click', function(){ transitionTo(false); });
 
     window.addEventListener('keydown', function(e){
-      if (e.key === 'ArrowRight') goNext();
-      if (e.key === 'ArrowLeft') goBack();
+      if (e.key === 'ArrowRight') transitionTo(true);
+      if (e.key === 'ArrowLeft') transitionTo(false);
     });
   })();
 </script>
