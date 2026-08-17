@@ -28,8 +28,8 @@ about blank:
 
 
 
-</script>
-    #loading-screen {
+<style>
+  #loading-screen {
     position: fixed;
     top: 0;
     left: 0;
